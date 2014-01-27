@@ -38,29 +38,27 @@ public class VisionICE extends WPICameraExtension
      WPIImageWrapper wrapper;
      wrapper = new WPIImageWrapper(rawImage);
         IplImage iplImage = wrapper.getIplImage();
-        final CanvasFrame canvas = new CanvasFrame("My Image", 1);
-        // Create New images for processing
+        final CanvasFrame canvas = new CanvasFrame("AxisCamera", 1);
+        // Create  images
         IplImage HSVimage   = IplImage.create(iplImage.cvSize(), opencv_core.IPL_DEPTH_8U, 3);
-        IplImage inRangeMat = IplImage.create(iplImage.cvSize(), opencv_core.IPL_DEPTH_8U, 1);
-        
-        // Get HSV image
+        IplImage ProcessedImage = IplImage.create(iplImage.cvSize(), opencv_core.IPL_DEPTH_8U, 1);
         opencv_imgproc.cvCvtColor(iplImage, HSVimage, opencv_imgproc.CV_BGR2HSV);
         
         
         // Threshold Image for white          
-        opencv_core.cvInRangeS(HSVimage, opencv_core.cvScalar(46.0, 25.0, 89.0, 0.0), opencv_core.cvScalar(62.0, 255.0, 255.0, 0.0), inRangeMat);
+        opencv_core.cvInRangeS(HSVimage, opencv_core.cvScalar(46.0, 25.0, 89.0, 0.0), opencv_core.cvScalar(62.0, 255.0, 255.0, 0.0), ProcessedImage);
          // cvScalar(blue, green, red, unused)
         // Filter image
-        opencv_imgproc.cvErode(inRangeMat, inRangeMat, null, 2);
-        opencv_imgproc.cvDilate(inRangeMat, inRangeMat, null, 4);
-        opencv_imgproc.cvErode(inRangeMat, inRangeMat, null, 2);
+        opencv_imgproc.cvErode(ProcessedImage, ProcessedImage, null, 2);
+        opencv_imgproc.cvDilate(ProcessedImage, ProcessedImage, null, 4);
+        opencv_imgproc.cvErode(ProcessedImage, ProcessedImage, null, 2);
                
         // Create Storage for the Contours
         opencv_core.CvMemStorage contours = opencv_core.CvMemStorage.create();
         opencv_core.CvSeq hierarchy = new opencv_core.CvSeq();
         
         // Find the Rectangles
-        opencv_imgproc.cvFindContours(inRangeMat, contours, hierarchy, com.googlecode.javacpp.Loader.sizeof(opencv_core.CvContour.class), opencv_imgproc.CV_RETR_TREE, opencv_imgproc.CV_CHAIN_APPROX_SIMPLE, opencv_core.cvPoint(0, 0));
+        opencv_imgproc.cvFindContours(ProcessedImage, contours, hierarchy, com.googlecode.javacpp.Loader.sizeof(opencv_core.CvContour.class), opencv_imgproc.CV_RETR_TREE, opencv_imgproc.CV_CHAIN_APPROX_SIMPLE, opencv_core.cvPoint(0, 0));
         
         // Process the rectangles
         for(int idx = 0; idx < hierarchy.total(); idx++)
@@ -89,6 +87,6 @@ public class VisionICE extends WPICameraExtension
        
         
         // Put IplImage into a WPIColorImag
-        return new WPIColorImage(iplImage.getBufferedImage());
+        return new WPIColorImage(HSVimage.getBufferedImage());
     }
 }
